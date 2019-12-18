@@ -1,2 +1,2 @@
-# multiplayer-web-test
-An experiement in getting multiple clients synchronised over the web
+# Multi-player web game
+An experiment in getting multiple clients synchronised over the web
