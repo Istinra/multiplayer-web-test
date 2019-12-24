@@ -24,7 +24,11 @@ module.exports = {
         compress: true,
         port: 9000,
         proxy: {
-            '/request': 'http://localhost:3000/'
+            '/request': 'http://localhost:3000/',
+            '/': {
+                target: 'ws://localhost:8999/',
+                ws: true
+            }
         }
     }
 };

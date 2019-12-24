@@ -1,9 +1,12 @@
-import {State} from "./state";
+import {Vec2, WorldState} from "../../shared/src/shared-state";
+import {MovePlayer} from "../../shared/src/packets";
 
 const canvas = document.getElementById("renderTarget") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-const state: State = {
+const socket: WebSocket = new WebSocket("ws://" + location.host + "/");
+
+const state: WorldState = {
     playerPos: {
         x: 0,
         y: 0
@@ -28,17 +31,41 @@ function frame(dt: number) {
 
 window.requestAnimationFrame(frame);
 
+socket.onmessage = message => {
+  let parse = JSON.parse(message.data) as MovePlayer;
+};
+
+function movePlayer(pos: Vec2): void {
+    state.playerPos = pos;
+    const event: MovePlayer = {
+        pos: pos
+    };
+    socket.send(JSON.stringify(event));
+}
+
 document.addEventListener("keydown", (event: KeyboardEvent) => {
     if (event.key === "a") {
-        state.playerPos.x -= 10;
+        movePlayer({
+           x: state.playerPos.x - 10,
+           y: state.playerPos.y
+        });
     }
     if (event.key === "d") {
-        state.playerPos.x += 10;
+        movePlayer({
+            x: state.playerPos.x + 10,
+            y: state.playerPos.y
+        });
     }
     if (event.key === "w") {
-        state.playerPos.y -= 10;
+        movePlayer({
+            x: state.playerPos.x,
+            y: state.playerPos.y - 10
+        });
     }
     if (event.key === "s") {
-        state.playerPos.y += 10;
+        movePlayer({
+            x: state.playerPos.x,
+            y: state.playerPos.y + 10
+        });
     }
 });
