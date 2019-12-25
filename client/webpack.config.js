@@ -26,7 +26,7 @@ module.exports = {
         proxy: {
             '/request': 'http://localhost:3000/',
             '/': {
-                target: 'ws://localhost:8999/',
+                target: 'ws://localhost:3000/',
                 ws: true
             }
         }

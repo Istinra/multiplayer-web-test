@@ -32,7 +32,8 @@ function frame(dt: number) {
 window.requestAnimationFrame(frame);
 
 socket.onmessage = message => {
-  let parse = JSON.parse(message.data) as MovePlayer;
+  const event: MovePlayer = JSON.parse(message.data) as MovePlayer;
+  state.playerPos = event.pos;
 };
 
 function movePlayer(pos: Vec2): void {

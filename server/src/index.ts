@@ -9,7 +9,6 @@ const port = 3000;
 const server = http.createServer(app);
 // app.get('/request', (req: Request, res: Response) => res.send('Hello World!'));
 app.use(express.static('../client/dist'));
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
 const gs = new GameServer();
 
