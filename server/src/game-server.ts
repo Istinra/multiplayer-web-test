@@ -5,7 +5,7 @@ export class GameServer {
 
     public worldState: WorldState = {
         player: {
-            id: "",
+            id: -1,
             pos: {x: 0, y: 0}
         },
         entities: []
@@ -13,6 +13,10 @@ export class GameServer {
 
     public addEntity(entity: Entity): void {
         this.worldState.entities.push(entity);
+    }
+
+    public removeEntity(id: number) {
+        this.worldState.entities.splice(this.worldState.entities.findIndex(e => e.id === id), 1);
     }
 
     public onClientMove(message: Packet): Entity | undefined {

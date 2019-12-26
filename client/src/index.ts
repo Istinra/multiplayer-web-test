@@ -8,7 +8,7 @@ const socket: WebSocket = new WebSocket("ws://" + location.host + "/");
 
 const state: WorldState = {
     player: {
-        id: "",
+        id: -1,
         pos: {
             x: 0,
             y: 0
@@ -34,7 +34,7 @@ function drawEntities() {
     }
 }
 
-function frame(dt: number) {
+function frame() {
     drawBg();
     drawPlayer();
     drawEntities();

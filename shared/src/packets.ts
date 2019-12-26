@@ -10,13 +10,13 @@ export enum PacketType {
 
 export interface OnConnectToServer {
     type: typeof PacketType.ON_CONNECT_TO_SERVER;
-    clientId: string
+    clientId: number
     serverState: WorldState;
 }
 
 export interface MovePlayer {
     type: typeof PacketType.MOVE_PLAYER;
-    id: string;
+    id: number;
     pos: Vec2;
 }
 
@@ -27,7 +27,7 @@ export interface CreateEntity {
 
 export interface DestroyEntity {
     type: typeof PacketType.DESTROY_ENTITY;
-    entityId: string
+    entityId: number
 }
 
 export interface UpdateEntity {

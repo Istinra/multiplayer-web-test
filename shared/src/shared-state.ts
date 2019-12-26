@@ -4,7 +4,7 @@ export interface WorldState {
 }
 
 export interface Entity {
-    id: string;
+    id: number;
     pos: Vec2;
 }
 
