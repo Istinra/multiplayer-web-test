@@ -1,5 +1,38 @@
-import {Vec2} from "./shared-state";
+import {Entity, Vec2, WorldState} from "./shared-state";
+
+export enum PacketType {
+    ON_CONNECT_TO_SERVER,
+    MOVE_PLAYER,
+    CREATE_ENTITY,
+    DESTROY_ENTITY,
+    UPDATE_ENTITY
+}
+
+export interface OnConnectToServer {
+    type: typeof PacketType.ON_CONNECT_TO_SERVER;
+    clientId: string
+    serverState: WorldState;
+}
 
 export interface MovePlayer {
+    type: typeof PacketType.MOVE_PLAYER;
+    id: string;
     pos: Vec2;
 }
+
+export interface CreateEntity {
+    type: typeof PacketType.CREATE_ENTITY;
+    entity: Entity
+}
+
+export interface DestroyEntity {
+    type: typeof PacketType.DESTROY_ENTITY;
+    entityId: string
+}
+
+export interface UpdateEntity {
+    type: typeof PacketType.UPDATE_ENTITY;
+    entity: Entity
+}
+
+export type Packet = OnConnectToServer | MovePlayer | CreateEntity | DestroyEntity | UpdateEntity;

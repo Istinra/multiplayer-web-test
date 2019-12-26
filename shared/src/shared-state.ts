@@ -1,5 +1,11 @@
 export interface WorldState {
-    playerPos: Vec2;
+    player: Entity;
+    entities: Entity[];
+}
+
+export interface Entity {
+    id: string;
+    pos: Vec2;
 }
 
 export interface Vec2 {
