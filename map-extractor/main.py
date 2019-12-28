@@ -12,43 +12,46 @@ bankId = int.from_bytes(rom.read(1), byteorder="little")
 blockPtr = int.from_bytes(rom.read(2), byteorder='little') % 0x4000 + bankId * 0x4000
 tilePtr = int.from_bytes(rom.read(2), byteorder='little') % 0x4000 + bankId * 0x4000
 
-tiles = []
 
-rom.seek(tilePtr)
-for offset in range(256):
-    firstTile = rom.read(16)
-    # rgbData = bytearray((8 * 8) * 3)
-    tileColors = []
-    for i in range(8):
-        lo = firstTile[i * 2]
-        hi = firstTile[i * 2 + 1]
-        for j in range(8):
-            bit = 7 - j
-            colorIndex = (((hi >> bit) & 1) << 1) | ((lo >> bit) & 1)
-            tileColors.append(colorIndex)
-            # colorBytes = colors[colorIndex].to_bytes(length=3, byteorder="big")
-            # for k in range(3):
-            #     rgbData[(i * 8 + j) * 3 + k] = colorBytes[k]
-    # image = Image.frombytes('RGB', (8, 8), bytes(rgbData))
-    # image.save('eh {}.png'.format(offset))
-    tiles.append(tileColors)
+def load_tiles():
+    loaded_tiles = []
+    rom.seek(tilePtr)
+    for offset in range(256):
+        tile_data = rom.read(16)
+        tile_colour_indexes = []
+        for i in range(8):
+            lo = tile_data[i * 2]
+            hi = tile_data[i * 2 + 1]
+            for j in range(8):
+                bit = 7 - j
+                color_index = (((hi >> bit) & 1) << 1) | ((lo >> bit) & 1)
+                tile_colour_indexes.append(color_index)
+        loaded_tiles.append(tile_colour_indexes)
+    return loaded_tiles
 
-rom.seek(blockPtr)
 
-for blockNum in range(256):
-    block = rom.read(16)
-    rgbData = bytearray(8 * 8 * 3 * 4 * 4)
-    for bh in range(4):
-        for bw in range(4):
-            tileIndex = block[bh * 4 + bw]
-            for th in range(8):
-                for tw in range(8):
-                    h = 8 * 4 * (bh * 8 + th)
-                    w = tw + 8 * bw
-                    colorBytes = colors[tiles[tileIndex][th * 8 + tw]].to_bytes(length=3, byteorder="big")
-                    for b in range(3):
-                        rgbData[(h + w) * 3 + b] = colorBytes[b]
-    image = Image.frombytes('RGB', (32, 32), bytes(rgbData))
-    image.save('eh{}.png'.format(blockNum))
+tiles = load_tiles()
+
+
+def load_blocks():
+    rom.seek(blockPtr)
+    for blockNum in range(256):
+        block = rom.read(16)
+        rgb_data = bytearray(8 * 8 * 3 * 4 * 4)
+        for bh in range(4):
+            for bw in range(4):
+                tile_index = block[bh * 4 + bw]
+                for th in range(8):
+                    for tw in range(8):
+                        h = 8 * 4 * (bh * 8 + th)
+                        w = tw + 8 * bw
+                        color_bytes = colors[tiles[tile_index][th * 8 + tw]].to_bytes(length=3, byteorder="big")
+                        for b in range(3):
+                            rgb_data[(h + w) * 3 + b] = color_bytes[b]
+        image = Image.frombytes('RGB', (32, 32), bytes(rgb_data))
+        image.save('eh{}.png'.format(blockNum))
+
+
+load_blocks()
 
 
