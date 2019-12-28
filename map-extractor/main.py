@@ -5,7 +5,6 @@
 from PIL import Image
 
 colors = [0xffffff, 0x909090, 0x404040, 0x000000]
-# colors = [0x0000ff, 0xffffff, 0xffffff, 0xffffff]
 
 rom = open('./red.gb', 'rb')
 rom.seek(0xC7BE)
@@ -15,8 +14,8 @@ tilePtr = int.from_bytes(rom.read(2), byteorder='little') % 0x4000 + bankId * 0x
 
 tiles = []
 
+rom.seek(tilePtr)
 for offset in range(256):
-    rom.seek(tilePtr + offset * 16)
     firstTile = rom.read(16)
     # rgbData = bytearray((8 * 8) * 3)
     tileColors = []
@@ -35,20 +34,21 @@ for offset in range(256):
     tiles.append(tileColors)
 
 rom.seek(blockPtr)
-block = rom.read(16)
-rgbData = bytearray(8 * 8 * 3 * 4 * 4)
-count = 0
-for bh in range(4):
-    for bw in range(4):
-        tileIndex = block[bh * 4 + bw]
-        for th in range(8):
-            for tw in range(8):
-                h = 8 * 4 * (bh * 8 + th)
-                w = tw + 8 * bw
-                colorBytes = colors[tiles[tileIndex][th * 8 + tw]].to_bytes(length=3, byteorder="big")
-                for b in range(3):
-                    rgbData[(h + w) * 3 + b] = colorBytes[b]
-image = Image.frombytes('RGB', (32, 32), bytes(rgbData))
-image.save('eh.png')
+
+for blockNum in range(256):
+    block = rom.read(16)
+    rgbData = bytearray(8 * 8 * 3 * 4 * 4)
+    for bh in range(4):
+        for bw in range(4):
+            tileIndex = block[bh * 4 + bw]
+            for th in range(8):
+                for tw in range(8):
+                    h = 8 * 4 * (bh * 8 + th)
+                    w = tw + 8 * bw
+                    colorBytes = colors[tiles[tileIndex][th * 8 + tw]].to_bytes(length=3, byteorder="big")
+                    for b in range(3):
+                        rgbData[(h + w) * 3 + b] = colorBytes[b]
+    image = Image.frombytes('RGB', (32, 32), bytes(rgbData))
+    image.save('eh{}.png'.format(blockNum))
 
 
