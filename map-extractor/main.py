@@ -51,22 +51,42 @@ def load_blocks(block_ptr, tiles):
     block_imgs = []
     for blockNum in range(256):
         block = rom.read(16)
-        rgb_data = bytearray(TILE_WH * TILE_WH * BYTES_PER_PX * BLOCK_WH * BLOCK_WH)
+        block_color_indexes = [0] * TILE_WH * TILE_WH * BLOCK_WH * BLOCK_WH
         for bh in range(BLOCK_WH):
             for bw in range(BLOCK_WH):
                 tile_index = block[bh * BLOCK_WH + bw]
                 for th in range(TILE_WH):
                     for tw in range(TILE_WH):
-                        h = TILE_WH * BLOCK_WH * (bh * TILE_WH + th)
+                        h = BLOCK_TILE_WH * (bh * TILE_WH + th)
                         w = tw + TILE_WH * bw
-                        color_bytes = COLORS[tiles[tile_index][th * TILE_WH + tw]].to_bytes(length=BYTES_PER_PX,
-                                                                                            byteorder="big")
-                        for b in range(BYTES_PER_PX):
-                            rgb_data[(h + w) * BYTES_PER_PX + b] = color_bytes[b]
-        block_imgs.append(rgb_data)
+                        block_color_indexes[h + w] = tiles[tile_index][th * TILE_WH + tw]
+        block_imgs.append(block_color_indexes)
     return block_imgs
 
 
+# def sort_shit_out():
+#     rom.seek(0xC7BE)
+#     bank_id = int.from_bytes(rom.read(1), byteorder="little")
+#     block_ptr = int.from_bytes(rom.read(2), byteorder='little') % BANK_SIZE + bank_id * BANK_SIZE
+#     tile_ptr = int.from_bytes(rom.read(2), byteorder='little') % BANK_SIZE + bank_id * BANK_SIZE
+#     tiles = load_tiles(tile_ptr)
+#     blocks = load_blocks(block_ptr, tiles)
+#
+#     offset = 0
+#     for block in blocks:
+#         rgb_data = bytearray(BLOCK_TILE_WH * BLOCK_TILE_WH * BYTES_PER_PX)
+#         for bh in range(BLOCK_TILE_WH):
+#             for bw in range(BLOCK_TILE_WH):
+#                 color_index = block[BLOCK_TILE_WH * bh + bw]
+#                 color_bytes = COLORS[color_index].to_bytes(length=BYTES_PER_PX, byteorder="big")
+#                 for b in range(BYTES_PER_PX):
+#                     rgb_data[(BLOCK_TILE_WH * bh + bw) * 3 + b] = color_bytes[b]
+#         image = Image.frombytes('RGB', (32, 32), bytes(rgb_data))
+#         image.save('eh{}.png'.format(offset))
+#         offset += 1
+#
+# sort_shit_out()
+#
 def load_maps():
 
     tilesets = load_tilesets()
@@ -92,11 +112,14 @@ def load_maps():
             for mw in range(map_width):
                 block = map_blocks[mh * map_width + mw]
                 for bh in range(BLOCK_TILE_WH):
-                    for bw in range(BLOCK_TILE_WH * BYTES_PER_PX):
-                        h = mh * map_width * BLOCK_TILE_WH * BYTES_PER_PX + mw * BLOCK_TILE_WH * BYTES_PER_PX + bw
-                        w = BLOCK_TILE_WH * BYTES_PER_PX * mw + bw
-                        temp = block[bh * BLOCK_TILE_WH * BYTES_PER_PX + bw]
-                        rbg_image_data[h + w] = temp
+                    for bw in range(BLOCK_TILE_WH):
+                        color_index = block[BLOCK_TILE_WH * bh + bw]
+                        color_bytes = COLORS[color_index].to_bytes(length=BYTES_PER_PX, byteorder="big")
+                        h = BLOCK_TILE_WH * map_width * (mh * BLOCK_TILE_WH + bh)
+                        w = bw + BLOCK_TILE_WH * mw
+                        for b in range(BYTES_PER_PX):
+                            rbg_image_data[(h + w) * 3 + b] = color_bytes[b]
+
         image = Image.frombytes('RGB', (32 * map_width, 32 * map_height), bytes(rbg_image_data))
         image.save('eh{}.png'.format(offset))
 
