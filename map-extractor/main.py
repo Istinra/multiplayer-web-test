@@ -18,7 +18,7 @@ rom = open('./red.gb', 'rb')
 def load_tilesets():
     tileset_blocks = []
 
-    for offset in range(23):
+    for offset in range(24):
         rom.seek(0xC7BE + offset * 12)
         bank_id = int.from_bytes(rom.read(1), byteorder="little")
         block_ptr = int.from_bytes(rom.read(2), byteorder='little') % BANK_SIZE + bank_id * BANK_SIZE
@@ -67,22 +67,45 @@ def load_blocks(block_ptr, tiles):
 def load_maps():
     tilesets = load_tilesets()
 
+    # Appears as though some bank location are invalid
+    # rom.seek(0xC23D)
+    # boots = rom.read(50)
+    # beets = list(boots)
+
+    prev_map_header_loc = None
     for offset in range(241):
+
         rom.seek(0x01AE + offset * 2)
-        map_header_loc = int.from_bytes(rom.read(2), byteorder="little") % BANK_SIZE
+        map_header_loc = int.from_bytes(rom.read(2), byteorder="little")
+        if map_header_loc == prev_map_header_loc:
+            continue
+        prev_map_header_loc = map_header_loc
         rom.seek(0xC23D + offset)
         map_header_bank_loc = int.from_bytes(rom.read(1), byteorder="little")
-        rom.seek(map_header_loc + map_header_bank_loc * BANK_SIZE)
+
+        if offset == 11:
+            map_header_bank_loc = 20
+        if offset == 105 or offset == 109 or offset == 237 or offset == 238:
+            map_header_bank_loc = 22
+        if offset == 204 or offset == 205 or offset == 206:
+            map_header_bank_loc = 17
+        if offset == 231:
+            map_header_bank_loc = 18
+
+        rom.seek(map_header_loc % BANK_SIZE + map_header_bank_loc * BANK_SIZE)
+
         tileset_index = int.from_bytes(rom.read(1), byteorder="little")
         map_height = int.from_bytes(rom.read(1), byteorder="little")
         map_width = int.from_bytes(rom.read(1), byteorder="little")
-        map_block_indexes_ptr = int.from_bytes(rom.read(2), byteorder="little") % BANK_SIZE
+        map_block_indexes_ptr = int.from_bytes(rom.read(2), byteorder="little")
 
-        rom.seek(map_block_indexes_ptr + map_header_bank_loc * BANK_SIZE)
+        rom.seek(map_block_indexes_ptr % BANK_SIZE + map_header_bank_loc * BANK_SIZE)
+
         tileset = tilesets[tileset_index]
         map_blocks = []
         for block_index in range(map_height * map_width):
-            map_blocks.append(tileset[block_index])
+            map_blocks.append(tileset[int.from_bytes(rom.read(1), byteorder="little")])
+
         rbg_image_data = bytearray(map_height * map_width * BLOCK_TILE_WH * BLOCK_TILE_WH * BYTES_PER_PX)
         for mh in range(map_height):
             for mw in range(map_width):
