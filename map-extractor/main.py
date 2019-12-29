@@ -4,13 +4,27 @@
 
 from PIL import Image
 
+BANK_SIZE = 0x4000
+
 colors = [0xffffff, 0x909090, 0x404040, 0x000000]
 
 rom = open('./red.gb', 'rb')
+
+# rom.seek(0x01AE)
+# map_header_loc = int.from_bytes(rom.read(2), byteorder="little") % BANK_SIZE
+# rom.seek(0xC23D)
+# map_header_bank_loc = int.from_bytes(rom.read(1), byteorder="little")
+#
+# rom.seek(map_header_loc + map_header_bank_loc * BANK_SIZE)
+# tileset_index = int.from_bytes(rom.read(1), byteorder="little")
+# map_height = int.from_bytes(rom.read(1), byteorder="little")
+# map_width = int.from_bytes(rom.read(1), byteorder="little")
+
+
 rom.seek(0xC7BE)
 bankId = int.from_bytes(rom.read(1), byteorder="little")
-blockPtr = int.from_bytes(rom.read(2), byteorder='little') % 0x4000 + bankId * 0x4000
-tilePtr = int.from_bytes(rom.read(2), byteorder='little') % 0x4000 + bankId * 0x4000
+blockPtr = int.from_bytes(rom.read(2), byteorder='little') % BANK_SIZE + bankId * BANK_SIZE
+tilePtr = int.from_bytes(rom.read(2), byteorder='little') % BANK_SIZE + bankId * BANK_SIZE
 
 
 def load_tiles():
