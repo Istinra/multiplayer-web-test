@@ -67,13 +67,11 @@ def load_blocks(block_ptr, tiles):
 def load_maps():
     tilesets = load_tilesets()
 
-    # Appears as though some bank location are invalid
-    # rom.seek(0xC23D)
-    # boots = rom.read(50)
-    # beets = list(boots)
+    unused_maps = [11, 69, 75, 78, 105, 106, 107, 109, 110, 111, 112, 114, 115, 116, 117, 173, 204, 205, 206, 231, 237,
+                   238, 241, 242, 243, 244]
 
     prev_map_header_loc = None
-    for offset in range(241):
+    for offset in [i for i in range(257) if i not in unused_maps]:
 
         rom.seek(0x01AE + offset * 2)
         map_header_loc = int.from_bytes(rom.read(2), byteorder="little")
