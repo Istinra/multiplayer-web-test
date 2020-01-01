@@ -10,7 +10,8 @@ BLOCK_WH = 4
 BYTES_PER_PX = 3
 BLOCK_TILE_WH = BLOCK_WH * TILE_WH
 
-COLORS = [0xffffff, 0x909090, 0x404040, 0x000000]
+COLORS = [0xffffff, 0x909090, 0x404040, 0x000000,
+          0xffaaaa, 0xCC9090, 0x502020, 0x300000]
 
 rom = open('./red.gb', 'rb')
 
@@ -23,13 +24,37 @@ def load_tilesets():
         bank_id = int.from_bytes(rom.read(1), byteorder="little")
         block_ptr = int.from_bytes(rom.read(2), byteorder='little') % BANK_SIZE + bank_id * BANK_SIZE
         tile_ptr = int.from_bytes(rom.read(2), byteorder='little') % BANK_SIZE + bank_id * BANK_SIZE
-        tiles = load_tiles(tile_ptr)
+        collision_ptr = int.from_bytes(rom.read(2), byteorder='little') # % BANK_SIZE + bank_id * BANK_SIZE
+
+        rom.seek(collision_ptr)
+        free_tiles = []
+        for c in range(256):
+            read = rom.read(1)
+            tile_num = int.from_bytes(read, byteorder="little")
+            if 0xFF == tile_num:
+                break
+            free_tiles.append(tile_num)
+
+        tiles = load_tiles(tile_ptr, free_tiles)
+
+        # count = 0
+        # for t in tiles:
+        #     if count in free_tiles:
+        #         rbg_image_data = bytearray(len(t) * BYTES_PER_PX)
+        #         for p in range(len(t)):
+        #             color_bytes = COLORS[t[p]].to_bytes(length=BYTES_PER_PX, byteorder="big")
+        #             for b in range(BYTES_PER_PX):
+        #                 rbg_image_data[p * BYTES_PER_PX + b] = color_bytes[b]
+        #         image = Image.frombytes('RGB', (8, 8), bytes(rbg_image_data))
+        #         image.save('eh{} {}.png'.format(offset, count))
+        #     count += 1
+
         blocks = load_blocks(block_ptr, tiles)
         tileset_blocks.append(blocks)
     return tileset_blocks
 
 
-def load_tiles(tile_ptr):
+def load_tiles(tile_ptr, free_tiles):
     loaded_tiles = []
     rom.seek(tile_ptr)
     for offset in range(256):
@@ -41,6 +66,8 @@ def load_tiles(tile_ptr):
             for j in range(TILE_WH):
                 bit = 7 - j
                 color_index = (((hi >> bit) & 1) << 1) | ((lo >> bit) & 1)
+                if offset in free_tiles:
+                    color_index += 4
                 tile_colour_indexes.append(color_index)
         loaded_tiles.append(tile_colour_indexes)
     return loaded_tiles
@@ -70,29 +97,17 @@ def load_maps():
     unused_maps = [11, 69, 75, 78, 105, 106, 107, 109, 110, 111, 112, 114, 115, 116, 117, 173, 204, 205, 206, 231, 237,
                    238, 241, 242, 243, 244]
 
-    prev_map_header_loc = None
-    for offset in [i for i in range(257) if i not in unused_maps]:
+    for offset in [i for i in range(247) if i not in unused_maps]:
 
         rom.seek(0x01AE + offset * 2)
         map_header_loc = int.from_bytes(rom.read(2), byteorder="little")
-        if map_header_loc == prev_map_header_loc:
-            continue
-        prev_map_header_loc = map_header_loc
         rom.seek(0xC23D + offset)
         map_header_bank_loc = int.from_bytes(rom.read(1), byteorder="little")
-
-        if offset == 11:
-            map_header_bank_loc = 20
-        if offset == 105 or offset == 109 or offset == 237 or offset == 238:
-            map_header_bank_loc = 22
-        if offset == 204 or offset == 205 or offset == 206:
-            map_header_bank_loc = 17
-        if offset == 231:
-            map_header_bank_loc = 18
 
         rom.seek(map_header_loc % BANK_SIZE + map_header_bank_loc * BANK_SIZE)
 
         tileset_index = int.from_bytes(rom.read(1), byteorder="little")
+        print("{} offset uses {} tile index".format(offset, tileset_index))
         map_height = int.from_bytes(rom.read(1), byteorder="little")
         map_width = int.from_bytes(rom.read(1), byteorder="little")
         map_block_indexes_ptr = int.from_bytes(rom.read(2), byteorder="little")
