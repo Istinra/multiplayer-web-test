@@ -36,19 +36,7 @@ def load_tilesets():
             free_tiles.append(tile_num)
 
         tiles = load_tiles(tile_ptr, free_tiles)
-
-        # count = 0
-        # for t in tiles:
-        #     if count in free_tiles:
-        #         rbg_image_data = bytearray(len(t) * BYTES_PER_PX)
-        #         for p in range(len(t)):
-        #             color_bytes = COLORS[t[p]].to_bytes(length=BYTES_PER_PX, byteorder="big")
-        #             for b in range(BYTES_PER_PX):
-        #                 rbg_image_data[p * BYTES_PER_PX + b] = color_bytes[b]
-        #         image = Image.frombytes('RGB', (8, 8), bytes(rbg_image_data))
-        #         image.save('eh{} {}.png'.format(offset, count))
-        #     count += 1
-
+        
         blocks = load_blocks(block_ptr, tiles)
         tileset_blocks.append(blocks)
     return tileset_blocks
@@ -111,6 +99,20 @@ def load_maps():
         map_height = int.from_bytes(rom.read(1), byteorder="little")
         map_width = int.from_bytes(rom.read(1), byteorder="little")
         map_block_indexes_ptr = int.from_bytes(rom.read(2), byteorder="little")
+        rom.read(4)
+        connections = int.from_bytes(rom.read(1), byteorder="little")
+
+        north = (connections & 0x8) > 0
+
+        north_index = int.from_bytes(rom.read(1), byteorder="little")
+        connected_map_start_ptr = int.from_bytes(rom.read(2), byteorder="little")
+        current_map_start_ptr = int.from_bytes(rom.read(2), byteorder="little")
+        bigness = int.from_bytes(rom.read(1), byteorder="little")
+        con_map_width = int.from_bytes(rom.read(1), byteorder="little")
+        y_off = int.from_bytes(rom.read(1), byteorder="little")
+        x_off = int.from_bytes(rom.read(1), byteorder="little")
+
+        y_pos = 2 * map_height - 1
 
         rom.seek(map_block_indexes_ptr % BANK_SIZE + map_header_bank_loc * BANK_SIZE)
 
