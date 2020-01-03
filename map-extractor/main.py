@@ -1,6 +1,8 @@
 # https://datacrystal.romhacking.net/wiki/Pok%C3%A9mon_Red_and_Blue:ROM_map
+# https://datacrystal.romhacking.net/wiki/Pok%C3%A9mon_Red_and_Blue:Notes
 # https://bulbapedia.bulbagarden.net/wiki/User:Tiddlywinks/Map_header_data_structure_in_Generation_I
 # https://github.com/huderlem/RBMap
+# http://skeetendo.proboards.com/thread/15/rgby-map-headers
 
 from PIL import Image
 
@@ -79,11 +81,17 @@ def load_blocks(block_ptr, tiles):
     return block_imgs
 
 
+class Object(object):
+    pass
+
+
 def load_maps():
     tilesets = load_tilesets()
 
     unused_maps = [11, 69, 75, 78, 105, 106, 107, 109, 110, 111, 112, 114, 115, 116, 117, 173, 204, 205, 206, 231, 237,
                    238, 241, 242, 243, 244]
+
+    connection_data = dict()
 
     for offset in [i for i in range(247) if i not in unused_maps]:
 
@@ -95,24 +103,28 @@ def load_maps():
         rom.seek(map_header_loc % BANK_SIZE + map_header_bank_loc * BANK_SIZE)
 
         tileset_index = int.from_bytes(rom.read(1), byteorder="little")
-        print("{} offset uses {} tile index".format(offset, tileset_index))
         map_height = int.from_bytes(rom.read(1), byteorder="little")
         map_width = int.from_bytes(rom.read(1), byteorder="little")
         map_block_indexes_ptr = int.from_bytes(rom.read(2), byteorder="little")
         rom.read(4)
+
         connections = int.from_bytes(rom.read(1), byteorder="little")
 
-        north = (connections & 0x8) > 0
-
-        north_index = int.from_bytes(rom.read(1), byteorder="little")
-        connected_map_start_ptr = int.from_bytes(rom.read(2), byteorder="little")
-        current_map_start_ptr = int.from_bytes(rom.read(2), byteorder="little")
-        bigness = int.from_bytes(rom.read(1), byteorder="little")
-        con_map_width = int.from_bytes(rom.read(1), byteorder="little")
-        y_off = int.from_bytes(rom.read(1), byteorder="little")
-        x_off = int.from_bytes(rom.read(1), byteorder="little")
-
-        y_pos = 2 * map_height - 1
+        if connections & 0x8 > 0:
+            north = Object()
+            north.aa_map_ptr = map_block_indexes_ptr
+            north.aa_map_bank = map_header_bank_loc
+            north.aa_height = map_height
+            north.aa_width = map_width
+            north.con_index = int.from_bytes(rom.read(1), byteorder="little")
+            north.connected_map_start_ptr = int.from_bytes(rom.read(2), byteorder="little")
+            north.current_map_start_ptr = int.from_bytes(rom.read(2), byteorder="little")
+            north.bigness = int.from_bytes(rom.read(1), byteorder="little")
+            north.con_map_width = int.from_bytes(rom.read(1), byteorder="little")
+            north.y_off = int.from_bytes(rom.read(1), byteorder="little")
+            north.x_off = int.from_bytes(rom.read(1), byteorder="little")
+            north.window = int.from_bytes(rom.read(2), byteorder="little")
+            connection_data[offset] = north
 
         rom.seek(map_block_indexes_ptr % BANK_SIZE + map_header_bank_loc * BANK_SIZE)
 
@@ -121,21 +133,30 @@ def load_maps():
         for block_index in range(map_height * map_width):
             map_blocks.append(tileset[int.from_bytes(rom.read(1), byteorder="little")])
 
-        rbg_image_data = bytearray(map_height * map_width * BLOCK_TILE_WH * BLOCK_TILE_WH * BYTES_PER_PX)
-        for mh in range(map_height):
-            for mw in range(map_width):
-                block = map_blocks[mh * map_width + mw]
-                for bh in range(BLOCK_TILE_WH):
-                    for bw in range(BLOCK_TILE_WH):
-                        color_index = block[BLOCK_TILE_WH * bh + bw]
-                        color_bytes = COLORS[color_index].to_bytes(length=BYTES_PER_PX, byteorder="big")
-                        h = BLOCK_TILE_WH * map_width * (mh * BLOCK_TILE_WH + bh)
-                        w = bw + BLOCK_TILE_WH * mw
-                        for b in range(BYTES_PER_PX):
-                            rbg_image_data[(h + w) * 3 + b] = color_bytes[b]
+        # rbg_image_data = bytearray(map_height * map_width * BLOCK_TILE_WH * BLOCK_TILE_WH * BYTES_PER_PX)
+        # for mh in range(map_height):
+        #     for mw in range(map_width):
+        #         block = map_blocks[mh * map_width + mw]
+        #         for bh in range(BLOCK_TILE_WH):
+        #             for bw in range(BLOCK_TILE_WH):
+        #                 color_index = block[BLOCK_TILE_WH * bh + bw]
+        #                 color_bytes = COLORS[color_index].to_bytes(length=BYTES_PER_PX, byteorder="big")
+        #                 h = BLOCK_TILE_WH * map_width * (mh * BLOCK_TILE_WH + bh)
+        #                 w = bw + BLOCK_TILE_WH * mw
+        #                 for b in range(BYTES_PER_PX):
+        #                     rbg_image_data[(h + w) * 3 + b] = color_bytes[b]
+        #
+        # image = Image.frombytes('RGB', (32 * map_width, 32 * map_height), bytes(rbg_image_data))
+        # image.save('eh{}.png'.format(offset))
 
-        image = Image.frombytes('RGB', (32 * map_width, 32 * map_height), bytes(rbg_image_data))
-        image.save('eh{}.png'.format(offset))
+    # pewder city
+    pewter_city = connection_data[1]
+    route_2 = connection_data[pewter_city.con_index]
+
+    x_steps = (pewter_city.connected_map_start_ptr - route_2.aa_map_ptr) % route_2.aa_width
+
+    print("done!")
+
 
 
 load_maps()
