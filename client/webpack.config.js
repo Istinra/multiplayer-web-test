@@ -10,6 +10,12 @@ module.exports = {
                 use: 'ts-loader',
                 exclude: /node_modules/,
             },
+            {
+                test: /\.(png|svg|jpg|gif)$/,
+                use: [
+                    'file-loader',
+                ],
+            }
         ],
     },
     resolve: {
@@ -23,12 +29,12 @@ module.exports = {
         contentBase: path.join(__dirname, 'dist'),
         compress: true,
         port: 9000,
-        proxy: {
-            '/request': 'http://localhost:3000/',
-            '/': {
-                target: 'ws://localhost:3000/',
-                ws: true
-            }
-        }
+        // proxy: {
+        //     '/request': 'http://localhost:3000/',
+        //     '/': {
+        //         target: 'ws://localhost:3000/',
+        //         ws: true
+        //     }
+        // }
     }
 };
