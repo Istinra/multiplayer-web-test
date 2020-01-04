@@ -118,7 +118,7 @@ def load_maps():
             north.aa_width = map_width
             north.con_index = int.from_bytes(rom.read(1), byteorder="little")
             north.connected_map_start_ptr = int.from_bytes(rom.read(2), byteorder="little")
-            north.current_map_start_ptr = int.from_bytes(rom.read(2), byteorder="little")
+            north.current_map_start_ptr_ram = int.from_bytes(rom.read(2), byteorder="little")
             north.bigness = int.from_bytes(rom.read(1), byteorder="little")
             north.con_map_width = int.from_bytes(rom.read(1), byteorder="little")
             north.y_off = int.from_bytes(rom.read(1), byteorder="little")
@@ -149,14 +149,27 @@ def load_maps():
         # image = Image.frombytes('RGB', (32 * map_width, 32 * map_height), bytes(rbg_image_data))
         # image.save('eh{}.png'.format(offset))
 
-    # pewder city
-    pewter_city = connection_data[1]
-    route_2 = connection_data[pewter_city.con_index]
+    saff = connection_data[10]
+    r_18 = connection_data[16]
 
-    x_steps = (pewter_city.connected_map_start_ptr - route_2.aa_map_ptr) % route_2.aa_width
+    x_blocks_con_left_off = (saff.connected_map_start_ptr - BANK_SIZE) - (r_18.aa_map_ptr - BANK_SIZE)
+    x_blocks_con_left_off_mod = x_blocks_con_left_off % r_18.aa_width
+    mystical_x_steps = saff.current_map_start_ptr_ram - 0xC6E8 / 4
+
+    #
+    # Route 1 to Veridian City
+    #
+    r_1 = connection_data[12]
+    verd = connection_data[1]
+
+    # How many blocks verd falls to the left of the current map
+    x_blocks_con_left_off_2 = (r_1.connected_map_start_ptr - BANK_SIZE) - (verd.aa_map_ptr - BANK_SIZE)
+    x_blocks_con_left_off_mod_2 = x_blocks_con_left_off_2 % verd.aa_width
+
+    # How many blocks r_1 need to shift verd to the right, always zero when verd starts to the left
+    mystical_x_steps_2 = r_1.current_map_start_ptr_ram - 0xC6E8 / 4
 
     print("done!")
-
 
 
 load_maps()
