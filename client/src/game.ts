@@ -15,33 +15,9 @@
 //3 Input Handler
 //4 Player
 
-import {Vec2} from "../../shared/src/shared-state";
-
-enum Direction {
+export enum Direction {
     NORTH,
     SOUTH,
     EAST,
     WEST
-}
-
-interface Entity {
-    id: number;
-    mapIndex: number;
-    position: Vec2;
-}
-
-interface Player extends Entity {
-    facing: Direction;
-    moving: boolean;
-}
-
-interface WarpPoints extends Entity {
-    toMapIndex: number;
-    toPosition: Vec2;
-}
-
-interface GameState {
-    player: Player;
-    remotePlayer: WarpPoints[];
-
 }
