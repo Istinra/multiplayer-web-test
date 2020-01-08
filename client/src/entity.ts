@@ -11,7 +11,7 @@ export class Entity {
     }
 }
 
-enum PlayerState {
+export enum PlayerState {
     STILL,
     MOVING
 }

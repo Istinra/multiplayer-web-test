@@ -1,6 +1,7 @@
 import {InputHandler} from "./input-handler";
-import {Player} from "./entity";
+import {Player, PlayerState} from "./entity";
 import {Renderer} from "./renderer";
+import {Direction} from "./game";
 
 const inputHandler = new InputHandler();
 
@@ -10,11 +11,30 @@ const canvas = document.getElementById("renderTarget") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 const renderer = new Renderer(ctx);
 
-function doPhysics(dt: number) {
+let lastFrame = 0;
 
+function doPhysics(dt: number) {
+    if (player.state === PlayerState.MOVING) {
+        switch (player.facing) {
+            case Direction.NORTH:
+                player.position.y += (dt / 100);
+                break;
+            case Direction.SOUTH:
+                player.position.y -= (dt / 100);
+                break;
+            case Direction.EAST:
+                player.position.x += (dt / 100);
+                break;
+            case Direction.WEST:
+                player.position.x -= (dt / 100);
+                break;
+        }
+    }
 }
 
-function frame(dt: number) {
+function frame(totalTime: number) {
+    const dt = totalTime - lastFrame;
+    lastFrame = totalTime;
     inputHandler.applyInputs(player);
     doPhysics(dt);
     renderer.drawBackground();

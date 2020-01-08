@@ -21,3 +21,20 @@ export enum Direction {
     EAST,
     WEST
 }
+
+export interface Map {
+    id: string;
+    height: number;
+    width: number;
+    collisionData: boolean[];
+    imageData: string;
+    northMap?: Connection;
+    southMap?: Connection;
+    eastMap?: Connection;
+    westMap?: Connection;
+}
+
+export interface Connection {
+    mapId: string;
+    offset: number;
+}
