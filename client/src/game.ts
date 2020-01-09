@@ -22,11 +22,11 @@ export enum Direction {
     WEST
 }
 
-export interface Map {
+export interface MapArea {
     id: string;
     height: number;
     width: number;
-    collisionData: boolean[];
+    collisionData: number[];
     imageData: string;
     northMap?: Connection;
     southMap?: Connection;
