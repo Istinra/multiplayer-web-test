@@ -34,6 +34,10 @@ export interface MapArea {
     westMap?: Connection;
 }
 
+export interface World {
+    [key: number]: MapArea
+}
+
 export interface Connection {
     mapId: string;
     offset: number;
