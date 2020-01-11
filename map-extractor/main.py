@@ -151,12 +151,15 @@ def load_maps():
         if connections & 0x1 > 0:
             header.east = read_connection()
 
-        world[offset] = generate_images(header, tilesets)
+        new_map = generate_images(header, tilesets)
+        new_map["height"] = header.map_height * 2
+        new_map["width"] = header.map_width * 2
+        world[offset] = new_map
 
         # decode = base64.b64decode(map_data["imageData"])
         # with open('eh{}.png'.format(offset), 'wb') as f:
         #     f.write(decode)
-    with open('world.json', 'w') as json_file:
+    with open('../client/src/world.json', 'w') as json_file:
         json.dump(world, json_file)
 
 

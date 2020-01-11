@@ -26,6 +26,12 @@ export class Player extends Entity {
             this.facing = direction;
         }
     }
+
+    public stop(): void {
+        if (this.state === PlayerState.MOVING && this.position.x % 16 < 0.001 && this.position.y % 16 < 0.001) {
+            this.state = PlayerState.STILL;
+        }
+    }
 }
 
 export class WarpPoint extends Entity {

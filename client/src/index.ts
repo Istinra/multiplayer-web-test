@@ -17,39 +17,34 @@ let lastFrame = 0;
 
 function doPhysics(dt: number, mapArea: MapArea) {
     if (player.state === PlayerState.MOVING) {
+        let xMod = 0, yMod = 0;
         switch (player.facing) {
             case Direction.NORTH:
-                if (willCollide(mapArea, 0, 16)) {
-
-                }
-                player.position.y += (dt / 50);
+                yMod = 1;
                 break;
             case Direction.SOUTH:
-                if (willCollide(mapArea, 0, -16)) {
-
-                }
-                player.position.y -= (dt / 50);
+                yMod = -1;
                 break;
             case Direction.EAST:
-                if (willCollide(mapArea, 16, 0)) {
-
-                }
-                player.position.x += (dt / 50);
+                xMod = 1;
                 break;
             case Direction.WEST:
-                if (willCollide(mapArea, -16, 0)) {
-
-                }
-                player.position.x -= (dt / 100);
+                xMod = -1;
                 break;
+        }
+        if (willCollide(mapArea, xMod * 16, yMod * 16)) {
+            player.stop()
+        } else {
+            player.position.x += (dt / 100) * xMod;
+            player.position.y += (dt / 100) * yMod;
         }
     }
 }
 
 function willCollide(mapArea: MapArea, xMov: number, yMov: number): boolean {
-    let xcheck = Math.floor((player.position.x + xMov) / 16);
-    let ycheck = Math.floor((player.position.y + yMov) / 16);
-    return mapArea.collisionData[mapArea.width * ycheck + xcheck] === 0;
+    let xCheck = Math.floor((player.position.x + xMov) / 16);
+    let yCheck = Math.floor((player.position.y + yMov) / 16);
+    return mapArea.collisionData[mapArea.width * yCheck + xCheck] === 0;
 }
 
 function frame(totalTime: number) {
