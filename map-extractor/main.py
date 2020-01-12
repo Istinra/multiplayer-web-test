@@ -5,8 +5,9 @@
 # http://skeetendo.proboards.com/thread/15/rgby-map-headers
 
 import base64
-from io import BytesIO
 import json
+from io import BytesIO
+
 from PIL import Image
 
 BANK_SIZE = 0x4000
@@ -75,15 +76,13 @@ def load_blocks(block_ptr, tiles, tile_collision):
         for bh in range(BLOCK_WH):
             for bw in range(BLOCK_WH):
                 tile_index = block[bh * BLOCK_WH + bw]
-                y = 0
                 if tile_index in tile_collision:
-                    block_collision[(int(bh / 2))*2 + (int(bw / 2))] = 1
-                    y = 4
+                    block_collision[(int(bh / 2)) * 2 + (int(bw / 2))] = 1
                 for th in range(TILE_WH):
                     for tw in range(TILE_WH):
                         h = BLOCK_TILE_WH * (bh * TILE_WH + th)
                         w = tw + TILE_WH * bw
-                        block_color_indexes[h + w] = tiles[tile_index][th * TILE_WH + tw] + y
+                        block_color_indexes[h + w] = tiles[tile_index][th * TILE_WH + tw]
         block_imgs.append(block_color_indexes)
         blocks_collision.append(block_collision)
     return block_imgs, blocks_collision
@@ -115,6 +114,7 @@ def load_maps():
                    238, 241, 242, 243, 244]
 
     world = dict()
+    headers = dict()
     for offset in [i for i in range(247) if i not in unused_maps]:
 
         rom.seek(0x01AE + offset * 2)
@@ -155,10 +155,37 @@ def load_maps():
         new_map["height"] = header.map_height * 2
         new_map["width"] = header.map_width * 2
         world[offset] = new_map
+        headers[offset] = header
 
-        # decode = base64.b64decode(map_data["imageData"])
-        # with open('eh{}.png'.format(offset), 'wb') as f:
-        #     f.write(decode)
+        decode = base64.b64decode(new_map["imageData"])
+        with open('eh{}.png'.format(offset), 'wb') as f:
+            f.write(decode)
+
+    for current_id in world:
+        current_map = headers[current_id]
+        if hasattr(current_map, 'north'):
+            con_id = current_map.north.connected_map_index
+            con_map = headers[con_id]
+            x_blocks_con_left_off_2 = (current_map.north.connected_map_block_ptr - BANK_SIZE) - \
+                                      (con_map.block_data_ptr - BANK_SIZE)
+            x_blocks_con_left_off_mod_2 = x_blocks_con_left_off_2 % con_map.map_width
+            mystical_x_steps_2 = int((current_map.north.current_map_start_ptr_ram - 0xC6E8) / 4)
+            north = dict()
+            north["mapId"] = con_id
+            north["offset"] = -x_blocks_con_left_off_mod_2 + mystical_x_steps_2
+            world[current_id]["northMap"] = north
+        if hasattr(current_map, 'south'):
+            con_id = current_map.south.connected_map_index
+            con_map = headers[con_id]
+            x_blocks_con_left_off_2 = (current_map.south.connected_map_block_ptr - BANK_SIZE) - \
+                                      (con_map.block_data_ptr - BANK_SIZE)
+            x_blocks_con_left_off_mod_2 = x_blocks_con_left_off_2 % con_map.map_width
+            mystical_x_steps_2 = int((current_map.south.current_map_start_ptr_ram - 0xC6E8) / 4)
+            south = dict()
+            south["mapId"] = con_id
+            south["offset"] = -x_blocks_con_left_off_mod_2 + mystical_x_steps_2
+            world[current_id]["southMap"] = south
+
     with open('../client/src/world.json', 'w') as json_file:
         json.dump(world, json_file)
 

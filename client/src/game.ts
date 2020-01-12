@@ -15,6 +15,8 @@
 //3 Input Handler
 //4 Player
 
+import {Player} from "./entity";
+
 export enum Direction {
     NORTH,
     SOUTH,
@@ -34,11 +36,16 @@ export interface MapArea {
     westMap?: Connection;
 }
 
+export interface WorldState {
+    player: Player;
+    activeMap: number;
+}
+
 export interface World {
     [key: number]: MapArea
 }
 
 export interface Connection {
-    mapId: string;
+    mapId: number;
     offset: number;
 }
