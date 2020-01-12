@@ -3,22 +3,27 @@ import {World} from "./game";
 
 export class Renderer {
 
+    private active = new Image();
 
-
-    constructor(private ctx: CanvasRenderingContext2D, private world: World) {
+    constructor(private ctx: CanvasRenderingContext2D,
+                private world: World,
+                private widthHeight: number) {
+        this.active.src = "data:image/png;base64," + this.world[0].imageData;
     }
 
-    public drawBackground(): void {
+    public draw(p: Player): void {
+        const centre = this.widthHeight / 2 + 8;
+        this.drawBackground(p, centre);
+        this.drawEntities(p, centre);
+    }
 
-        let image = new Image();
-        image.src = "data:image/png;base64," + this.world[0].imageData;
-        this.ctx.fillStyle = "black";
+    public drawBackground(p: Player, centre: number): void {
         this.ctx.fillRect(0, 0, 600, 600);
-        this.ctx.drawImage(image, 0, 0);
+        this.ctx.drawImage(this.active, centre - p.position.x, centre - p.position.y);
     }
 
-    public drawEntities(p: Player): void {
+    public drawEntities(p: Player, centre: number): void {
         this.ctx.fillStyle = "white";
-        this.ctx.fillRect(p.position.x, p.position.y, 16, 16);
+        this.ctx.fillRect(centre, centre, 16, 16);
     }
 }

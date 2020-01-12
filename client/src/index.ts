@@ -11,7 +11,7 @@ const player = new Player(0);
 
 const canvas = document.getElementById("renderTarget") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-const renderer = new Renderer(ctx, world);
+const renderer = new Renderer(ctx, world, 600);
 
 let lastFrame = 0;
 
@@ -20,10 +20,10 @@ function doPhysics(dt: number, mapArea: MapArea) {
         let xMod = 0, yMod = 0;
         switch (player.facing) {
             case Direction.NORTH:
-                yMod = 1;
+                yMod = -1;
                 break;
             case Direction.SOUTH:
-                yMod = -1;
+                yMod = 1;
                 break;
             case Direction.EAST:
                 xMod = 1;
@@ -35,8 +35,8 @@ function doPhysics(dt: number, mapArea: MapArea) {
         if (willCollide(mapArea, xMod * 16, yMod * 16)) {
             player.stop()
         } else {
-            player.position.x += (dt / 100) * xMod;
-            player.position.y += (dt / 100) * yMod;
+            player.position.x += (dt / 50) * xMod;
+            player.position.y += (dt / 50) * yMod;
         }
     }
 }
@@ -52,8 +52,7 @@ function frame(totalTime: number) {
     lastFrame = totalTime;
     inputHandler.applyInputs(player);
     doPhysics(dt, world[0]);
-    renderer.drawBackground();
-    renderer.drawEntities(player);
+    renderer.draw(player);
     window.requestAnimationFrame(frame);
 }
 
