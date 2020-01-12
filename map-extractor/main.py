@@ -180,7 +180,10 @@ def load_maps():
             x_blocks_con_left_off_2 = (current_map.south.connected_map_block_ptr - BANK_SIZE) - \
                                       (con_map.block_data_ptr - BANK_SIZE)
             x_blocks_con_left_off_mod_2 = x_blocks_con_left_off_2 % con_map.map_width
-            mystical_x_steps_2 = int((current_map.south.current_map_start_ptr_ram - 0xC6E8) / 4)
+            mystical_x_steps_2 = int(
+                ((current_map.south.current_map_start_ptr_ram - 0xC6E8) -
+                 (current_map.map_height + 3) * (current_map.map_width + 6)) / 4
+            )
             south = dict()
             south["mapId"] = con_id
             south["offset"] = -x_blocks_con_left_off_mod_2 + mystical_x_steps_2
