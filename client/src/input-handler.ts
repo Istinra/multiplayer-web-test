@@ -9,8 +9,6 @@ export class InputHandler {
     public applyInputs(player: Player): void {
         if (this.active) {
             player.move(this.activeDirection);
-        } else {
-            player.stop();
         }
     }
 

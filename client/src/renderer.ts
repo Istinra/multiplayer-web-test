@@ -57,6 +57,12 @@ export class Renderer {
                 centre - p.position.y - northMap.height * 16
             );
         }
+        if (this.activeMap.southMap) {
+            this.ctx.drawImage(
+                this.south, centre - p.position.x + this.activeMap.southMap.offset,
+                centre - p.position.y + this.activeMap.height * 16
+            );
+        }
     }
 
     public drawEntities(p: Player, centre: number): void {

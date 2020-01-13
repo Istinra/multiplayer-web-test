@@ -19,19 +19,36 @@ export enum PlayerState {
 export class Player extends Entity {
     facing: Direction = Direction.SOUTH;
     state: PlayerState = PlayerState.STILL;
+    target?: Vec2;
 
     public move(direction: Direction): void {
         if (this.state === PlayerState.STILL) {
             this.state = PlayerState.MOVING;
             this.facing = direction;
+            switch (direction) {
+                case Direction.NORTH:
+                    this.target = {x: this.position.x, y: this.position.y - 16};
+                    break;
+                case Direction.SOUTH:
+                    this.target = {x: this.position.x, y: this.position.y + 16};
+                    break;
+                case Direction.EAST:
+                    this.target = {x: this.position.x + 16, y: this.position.y};
+                    break;
+                case Direction.WEST:
+                    this.target = {x: this.position.x - 16, y: this.position.y};
+                    break;
+
+            }
         }
     }
 
     public stop(): void {
-        if (this.state === PlayerState.MOVING && this.position.x % 16 < 0.001 && this.position.y % 16 < 0.001) {
+        if (this.state === PlayerState.MOVING) {
             this.state = PlayerState.STILL;
-            this.position.x = Math.floor(this.position.x);
-            this.position.y = Math.floor(this.position.y);
+            if (this.target) {
+                this.position = this.target;
+            }
         }
     }
 }

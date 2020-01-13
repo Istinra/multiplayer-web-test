@@ -2,6 +2,7 @@ import {InputHandler} from "./input-handler";
 import {Player, PlayerState} from "./entity";
 import {Renderer} from "./renderer";
 import {Direction, MapArea, WorldState} from "./game";
+import {Vec2} from "../../shared/src/shared-state";
 
 let world = require("./world.json");
 
@@ -19,34 +20,57 @@ const renderer = new Renderer(ctx, world, 600);
 let lastFrame = 0;
 
 function doPhysics(dt: number, mapArea: MapArea) {
-    if (state.player.state === PlayerState.MOVING) {
-        let xMod = 0, yMod = 0;
+    if (state.player.state === PlayerState.MOVING && state.player.target) {
+        let position = state.player.position;
         switch (state.player.facing) {
             case Direction.NORTH:
-                yMod = -1;
+                if (willCollide(mapArea, position, 0, -16)) {
+                    state.player.stop()
+                } else {
+                    position.y -= (dt / 50);
+                    if (position.y < state.player.target.y) {
+                        state.player.stop();
+                    }
+                }
                 break;
             case Direction.SOUTH:
-                yMod = 1;
+                if (willCollide(mapArea, position, 0, 16)) {
+                    state.player.stop()
+                } else {
+                    position.y += (dt / 50);
+                    if (position.y > state.player.target.y) {
+                        state.player.stop();
+                    }
+                }
                 break;
             case Direction.EAST:
-                xMod = 1;
+                if (willCollide(mapArea, position, 16, 0)) {
+                    state.player.stop()
+                } else {
+                    position.x += (dt / 50);
+                    if (position.x > state.player.target.x) {
+                        state.player.stop();
+                    }
+                }
                 break;
             case Direction.WEST:
-                xMod = -1;
+                if (willCollide(mapArea, position, -16, 0)) {
+                    state.player.stop()
+                } else {
+                    position.x -= (dt / 50);
+                    if (position.x < state.player.target.x) {
+                        state.player.stop();
+                    }
+                }
                 break;
         }
-        if (willCollide(mapArea, xMod * 16, yMod * 16)) {
-            state.player.stop()
-        } else {
-            state.player.position.x += (dt / 50) * xMod;
-            state.player.position.y += (dt / 50) * yMod;
-        }
+
     }
 }
 
-function willCollide(mapArea: MapArea, xMov: number, yMov: number): boolean {
-    let xCheck = Math.floor((state.player.position.x + xMov) / 16);
-    let yCheck = Math.floor((state.player.position.y + yMov) / 16);
+function willCollide(mapArea: MapArea, pos: Vec2, xMov: number, yMov: number): boolean {
+    let xCheck = Math.floor((pos.x + xMov) / 16);
+    let yCheck = Math.floor((pos.y + yMov) / 16);
     return mapArea.collisionData[mapArea.width * yCheck + xCheck] === 0;
 }
 
