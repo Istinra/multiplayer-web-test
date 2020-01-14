@@ -48,19 +48,21 @@ export class Renderer {
 
     public drawBackground(p: Player, centre: number): void {
         this.ctx.fillRect(0, 0, 600, 600);
-        this.ctx.drawImage(this.active, centre - p.position.x, centre - p.position.y);
+        const px = p.position.x * 16;
+        const py = p.position.y * 16;
+        this.ctx.drawImage(this.active, centre - px, centre - py);
 
         if (this.activeMap.northMap) {
             let northMap = this.world[this.activeMap.northMap.mapId];
             this.ctx.drawImage(
-                this.north, centre - p.position.x + this.activeMap.northMap.offset,
-                centre - p.position.y - northMap.height * 16
+                this.north, centre - px + this.activeMap.northMap.offset,
+                centre - py - northMap.height * 16
             );
         }
         if (this.activeMap.southMap) {
             this.ctx.drawImage(
-                this.south, centre - p.position.x + this.activeMap.southMap.offset,
-                centre - p.position.y + this.activeMap.height * 16
+                this.south, centre - px + this.activeMap.southMap.offset,
+                centre - py + this.activeMap.height * 16
             );
         }
     }

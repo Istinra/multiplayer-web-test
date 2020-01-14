@@ -24,40 +24,40 @@ function doPhysics(dt: number, mapArea: MapArea) {
         let position = state.player.position;
         switch (state.player.facing) {
             case Direction.NORTH:
-                if (willCollide(mapArea, position, 0, -16)) {
+                if (willCollide(mapArea, position, 0, -1)) {
                     state.player.stop(true);
                 } else {
-                    position.y -= (dt / 50);
+                    position.y -= (dt / 350);
                     if (position.y < state.player.target.y) {
                         state.player.stop(false);
                     }
                 }
                 break;
             case Direction.SOUTH:
-                if (willCollide(mapArea, position, 0, 16)) {
+                if (willCollide(mapArea, position, 0, 1)) {
                     state.player.stop(true);
                 } else {
-                    position.y += (dt / 50);
+                    position.y += (dt / 350);
                     if (position.y > state.player.target.y) {
                         state.player.stop(false);
                     }
                 }
                 break;
             case Direction.EAST:
-                if (willCollide(mapArea, position, 16, 0)) {
+                if (willCollide(mapArea, position, 1, 0)) {
                     state.player.stop(true);
                 } else {
-                    position.x += (dt / 50);
+                    position.x += (dt / 350);
                     if (position.x > state.player.target.x) {
                         state.player.stop(false);
                     }
                 }
                 break;
             case Direction.WEST:
-                if (willCollide(mapArea, position, -16, 0)) {
+                if (willCollide(mapArea, position, -1, 0)) {
                     state.player.stop(true);
                 } else {
-                    position.x -= (dt / 50);
+                    position.x -= (dt / 350);
                     if (position.x < state.player.target.x) {
                         state.player.stop(false);
                     }
@@ -69,8 +69,8 @@ function doPhysics(dt: number, mapArea: MapArea) {
 }
 
 function willCollide(mapArea: MapArea, pos: Vec2, xMov: number, yMov: number): boolean {
-    let xCheck = Math.floor((pos.x + xMov) / 16);
-    let yCheck = Math.floor((pos.y + yMov) / 16);
+    let xCheck = Math.floor(pos.x + xMov);
+    let yCheck = Math.floor(pos.y + yMov);
     return mapArea.collisionData[mapArea.width * yCheck + xCheck] === 0;
 }
 

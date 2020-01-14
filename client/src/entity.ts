@@ -4,7 +4,7 @@ import {Vec2} from "../../shared/src/shared-state";
 export class Entity {
     id: number;
     mapIndex: number = 0;
-    position: Vec2 = {x: 112, y: 112};
+    position: Vec2 = {x: 7, y: 7};
 
     constructor(id: number) {
         this.id = id;
@@ -27,16 +27,16 @@ export class Player extends Entity {
             this.facing = direction;
             switch (direction) {
                 case Direction.NORTH:
-                    this.target = {x: this.position.x, y: this.position.y - 16};
+                    this.target = {x: this.position.x, y: this.position.y - 1};
                     break;
                 case Direction.SOUTH:
-                    this.target = {x: this.position.x, y: this.position.y + 16};
+                    this.target = {x: this.position.x, y: this.position.y + 1};
                     break;
                 case Direction.EAST:
-                    this.target = {x: this.position.x + 16, y: this.position.y};
+                    this.target = {x: this.position.x + 1, y: this.position.y};
                     break;
                 case Direction.WEST:
-                    this.target = {x: this.position.x - 16, y: this.position.y};
+                    this.target = {x: this.position.x - 1, y: this.position.y};
                     break;
 
             }
@@ -48,6 +48,9 @@ export class Player extends Entity {
             this.state = PlayerState.STILL;
             if (this.target && !collision) {
                 this.position = this.target;
+            } else {
+                this.position.x = Math.round(this.position.x);
+                this.position.y = Math.round(this.position.y);
             }
         }
     }
