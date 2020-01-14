@@ -25,41 +25,41 @@ function doPhysics(dt: number, mapArea: MapArea) {
         switch (state.player.facing) {
             case Direction.NORTH:
                 if (willCollide(mapArea, position, 0, -16)) {
-                    state.player.stop()
+                    state.player.stop(true);
                 } else {
                     position.y -= (dt / 50);
                     if (position.y < state.player.target.y) {
-                        state.player.stop();
+                        state.player.stop(false);
                     }
                 }
                 break;
             case Direction.SOUTH:
                 if (willCollide(mapArea, position, 0, 16)) {
-                    state.player.stop()
+                    state.player.stop(true);
                 } else {
                     position.y += (dt / 50);
                     if (position.y > state.player.target.y) {
-                        state.player.stop();
+                        state.player.stop(false);
                     }
                 }
                 break;
             case Direction.EAST:
                 if (willCollide(mapArea, position, 16, 0)) {
-                    state.player.stop()
+                    state.player.stop(true);
                 } else {
                     position.x += (dt / 50);
                     if (position.x > state.player.target.x) {
-                        state.player.stop();
+                        state.player.stop(false);
                     }
                 }
                 break;
             case Direction.WEST:
                 if (willCollide(mapArea, position, -16, 0)) {
-                    state.player.stop()
+                    state.player.stop(true);
                 } else {
                     position.x -= (dt / 50);
                     if (position.x < state.player.target.x) {
-                        state.player.stop();
+                        state.player.stop(false);
                     }
                 }
                 break;

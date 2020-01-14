@@ -43,10 +43,10 @@ export class Player extends Entity {
         }
     }
 
-    public stop(): void {
+    public stop(collision: boolean): void {
         if (this.state === PlayerState.MOVING) {
             this.state = PlayerState.STILL;
-            if (this.target) {
+            if (this.target && !collision) {
                 this.position = this.target;
             }
         }
