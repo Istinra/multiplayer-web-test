@@ -1,7 +1,7 @@
 import {InputHandler} from "./input-handler";
 import {Player, PlayerState} from "./entity";
 import {Renderer} from "./renderer";
-import {Direction, MapArea, WorldState} from "./game";
+import {Direction, MapArea, World, WorldState} from "./game";
 import {Vec2} from "../../shared/src/shared-state";
 
 let world = require("./world.json");
@@ -22,63 +22,63 @@ let lastFrame = 0;
 function doPhysics(dt: number, mapArea: MapArea) {
     if (state.player.state === PlayerState.MOVING && state.player.target) {
         let position = state.player.position;
-        switch (state.player.facing) {
-            case Direction.NORTH:
-                if (willCollide(mapArea, position, 0, -1)) {
-                    state.player.stop(true);
-                } else {
+        let target = state.player.target;
+        if (willCollide(mapArea, target, world)) {
+            state.player.stop(true);
+        } else {
+            switch (state.player.facing) {
+                case Direction.NORTH:
                     position.y -= (dt / 350);
                     if (position.y < state.player.target.y) {
                         state.player.stop(false);
+                        if (position.y < 0 && mapArea.northMap) {
+                            let mapId = mapArea.northMap.mapId;
+                            state.activeMap = mapId;
+                            state.player.position.y = world[mapId].height - 1;
+                            state.player.position.x += mapArea.northMap.offset;
+                        }
                     }
-                }
-                break;
-            case Direction.SOUTH:
-                if (willCollide(mapArea, position, 0, 1)) {
-                    state.player.stop(true);
-                } else {
+                    break;
+                case Direction.SOUTH:
                     position.y += (dt / 350);
                     if (position.y > state.player.target.y) {
                         state.player.stop(false);
                     }
-                }
-                break;
-            case Direction.EAST:
-                if (willCollide(mapArea, position, 1, 0)) {
-                    state.player.stop(true);
-                } else {
+                    break;
+                case Direction.EAST:
                     position.x += (dt / 350);
                     if (position.x > state.player.target.x) {
                         state.player.stop(false);
                     }
-                }
-                break;
-            case Direction.WEST:
-                if (willCollide(mapArea, position, -1, 0)) {
-                    state.player.stop(true);
-                } else {
+                    break;
+                case Direction.WEST:
                     position.x -= (dt / 350);
                     if (position.x < state.player.target.x) {
                         state.player.stop(false);
                     }
-                }
-                break;
+                    break;
+            }
         }
-
     }
 }
 
-function willCollide(mapArea: MapArea, pos: Vec2, xMov: number, yMov: number): boolean {
-    let xCheck = Math.floor(pos.x + xMov);
-    let yCheck = Math.floor(pos.y + yMov);
-    return mapArea.collisionData[mapArea.width * yCheck + xCheck] === 0;
+function willCollide(mapArea: MapArea, target: Vec2, world: World): boolean {
+    if (target.y < 0) {
+        if (mapArea.northMap) {
+            let northMap = world[mapArea.northMap.mapId];
+            return northMap.collisionData[northMap.width * (northMap.height - 1) + target.x + mapArea.northMap.offset] === 0;
+        }
+        return true;
+    }
+    return mapArea.collisionData[mapArea.width * target.y + target.x] === 0;
 }
 
 function frame(totalTime: number) {
     const dt = totalTime - lastFrame;
     lastFrame = totalTime;
     inputHandler.applyInputs(state.player);
-    doPhysics(dt, world[0]);
+    doPhysics(dt, world[state.activeMap]);
+    renderer.setActiveMap(state.activeMap);
     renderer.draw(state);
     window.requestAnimationFrame(frame);
 }

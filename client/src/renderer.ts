@@ -9,6 +9,8 @@ export class Renderer {
     private east = new Image();
     private west = new Image();
 
+    private activeMapId: number = -1;
+
     private activeMap: MapArea;
 
     constructor(private ctx: CanvasRenderingContext2D,
@@ -19,6 +21,10 @@ export class Renderer {
     }
 
     public setActiveMap(activeMapId: number): void {
+        if (activeMapId === this.activeMapId) {
+            return;
+        }
+        this.activeMapId = activeMapId;
         this.activeMap = this.world[activeMapId];
         this.active.src = "data:image/png;base64," + this.activeMap.imageData;
         if (this.activeMap.northMap) {
