@@ -92,6 +92,7 @@ class MapHeaderConnection:
     connected_map_index: int
     connected_map_block_ptr: int
     current_map_start_ptr_ram: int
+    strip_size: int
 
 
 class MapHeader:
@@ -139,7 +140,8 @@ def load_maps():
             con.connected_map_index = int.from_bytes(rom.read(1), byteorder="little")
             con.connected_map_block_ptr = int.from_bytes(rom.read(2), byteorder="little")
             con.current_map_start_ptr_ram = int.from_bytes(rom.read(2), byteorder="little")
-            rom.read(6)
+            con.strip_size = int.from_bytes(rom.read(1), byteorder="little")
+            rom.read(5)
             return con
 
         if connections & 0x8 > 0:
@@ -157,9 +159,9 @@ def load_maps():
         world[offset] = new_map
         headers[offset] = header
 
-        decode = base64.b64decode(new_map["imageData"])
-        with open('eh{}.png'.format(offset), 'wb') as f:
-            f.write(decode)
+        # decode = base64.b64decode(new_map["imageData"])
+        # with open('eh{}.png'.format(offset), 'wb') as f:
+        #     f.write(decode)
 
     for current_id in world:
         current_map = headers[current_id]
@@ -168,18 +170,23 @@ def load_maps():
             con_map = headers[con_id]
             x_blocks_con_left_off_2 = (current_map.north.connected_map_block_ptr - BANK_SIZE) - \
                                       (con_map.block_data_ptr - BANK_SIZE)
-            x_blocks_con_left_off_mod_2 = x_blocks_con_left_off_2 % con_map.map_width
-            mystical_x_steps_2 = int((current_map.north.current_map_start_ptr_ram - 0xC6E8) / 4)
+            # Block location index in connected map
+            x_blocks_con_left_off_mod_2 = (x_blocks_con_left_off_2 % con_map.map_width) * 4 + \
+                                          (con_map.map_width - current_map.north.strip_size) / 2
+            # Why would this be 3 for pallet town?
+            mystical_x_steps_2 = current_map.north.current_map_start_ptr_ram - 0xC6E8
             north = dict()
             north["mapId"] = con_id
             north["offset"] = -x_blocks_con_left_off_mod_2 + mystical_x_steps_2
             world[current_id]["northMap"] = north
+        # Review once north is working
         if hasattr(current_map, 'south'):
             con_id = current_map.south.connected_map_index
             con_map = headers[con_id]
             x_blocks_con_left_off_2 = (current_map.south.connected_map_block_ptr - BANK_SIZE) - \
                                       (con_map.block_data_ptr - BANK_SIZE)
-            x_blocks_con_left_off_mod_2 = x_blocks_con_left_off_2 % con_map.map_width
+            x_blocks_con_left_off_mod_2 = (x_blocks_con_left_off_2 % con_map.map_width) * 4 + \
+                                          (con_map.map_width - current_map.south.strip_size) / 2
             mystical_x_steps_2 = int(
                 ((current_map.south.current_map_start_ptr_ram - 0xC6E8) -
                  (current_map.map_height + 3) * (current_map.map_width + 6)) / 4

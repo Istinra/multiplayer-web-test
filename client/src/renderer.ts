@@ -61,13 +61,13 @@ export class Renderer {
         if (this.activeMap.northMap) {
             let northMap = this.world[this.activeMap.northMap.mapId];
             this.ctx.drawImage(
-                this.north, centre - px + this.activeMap.northMap.offset,
+                this.north, centre - px + this.activeMap.northMap.offset * 16,
                 centre - py - northMap.height * 16
             );
         }
         if (this.activeMap.southMap) {
             this.ctx.drawImage(
-                this.south, centre - px + this.activeMap.southMap.offset,
+                this.south, centre - px + this.activeMap.southMap.offset * 16,
                 centre - py + this.activeMap.height * 16
             );
         }

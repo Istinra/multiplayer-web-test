@@ -23,36 +23,41 @@ function doPhysics(dt: number, mapArea: MapArea) {
     if (state.player.state === PlayerState.MOVING && state.player.target) {
         let position = state.player.position;
         let target = state.player.target;
-        if (willCollide(mapArea, target, world)) {
+            if (willCollide(mapArea, target, world)) {
             state.player.stop(true);
         } else {
             switch (state.player.facing) {
                 case Direction.NORTH:
-                    position.y -= (dt / 350);
+                    position.y -= (dt / 150);
                     if (position.y < state.player.target.y) {
                         state.player.stop(false);
                         if (position.y < 0 && mapArea.northMap) {
                             let mapId = mapArea.northMap.mapId;
                             state.activeMap = mapId;
-                            state.player.position.y = world[mapId].height - 1;
-                            state.player.position.x += mapArea.northMap.offset;
+                            state.player.position.y = world[mapId].height;
+                            state.player.position.x -= mapArea.northMap.offset;
                         }
                     }
                     break;
                 case Direction.SOUTH:
-                    position.y += (dt / 350);
+                    position.y += (dt / 150);
                     if (position.y > state.player.target.y) {
                         state.player.stop(false);
+                        if (position.y >= mapArea.height && mapArea.southMap) {
+                            state.activeMap = mapArea.southMap.mapId;
+                            state.player.position.y = 0;
+                            state.player.position.x -= mapArea.southMap.offset;
+                        }
                     }
                     break;
                 case Direction.EAST:
-                    position.x += (dt / 350);
+                    position.x += (dt / 150);
                     if (position.x > state.player.target.x) {
                         state.player.stop(false);
                     }
                     break;
                 case Direction.WEST:
-                    position.x -= (dt / 350);
+                    position.x -= (dt / 150);
                     if (position.x < state.player.target.x) {
                         state.player.stop(false);
                     }
